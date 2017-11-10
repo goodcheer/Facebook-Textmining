@@ -1,0 +1,133 @@
+---
+title: "Seperation Posts by Document"
+output: 
+  html_document:
+    keep_md: true
+---
+
+<h2> Step 1: Exclude univs that are hard to seperate posts </h2>
+```{r}
+library(ggplot2)
+load("data\\fbdata.RData")
+
+temp <- file[c(file$from_name!="전대숲-전국대학생 통합 대나무숲"),]
+temp <- temp[c(temp$from_name!="단국대학교 대나무숲"),]
+temp <- temp[c(temp$from_name!="서울과학기술대학교 대나무숲"),]
+temp <- temp[c(temp$from_name!="홍익대학교 대나무숲"),]
+temp <- temp[c(temp$from_name!="서울시립대학교 대나무숲"),]
+temp <- temp[c(temp$from_name!="건국대학교 대나무숲"),]
+temp <- temp[c(temp$from_name!="한국외국어대학교 글로벌캠퍼스 대나무숲"),]
+
+file <- temp; rm(temp)
+```
+
+<h2>Step2: set Seperate Rules   </h2>
+
+```{r}
+# Whole university names
+univs.name = levels(factor(file$from_name))
+
+# Univs with posts that can be seperated by #...(hashtag)
+univs.hashsep.name <- c("인천대학교 대나무숲", "의학과, 의예과 대나무숲",
+  "국립 경상대학교 대나무숲", "동덕여자대학교 대나무숲",
+  "충북대학교 대나무숲", "강남대학교 대나무숲",
+  "한국항공대학교 대나무숲", "부산대학교 대나무숲",
+  "세종대학교 대나무숲", "아주대학교 대나무숲" ,
+  "성균관대학교 대나무숲", "한양대학교 대나무숲",
+  "CAU Bamboo Grove", "서강대학교 대나무숲",
+  "한성대학교 대나무숲", "숙명여대 대나무숲",
+  "숭실대학교 대나무숲")
+
+univs.hashsep <- subset(file, from_name %in% univs.hashsep.name)
+levels(factor(univs.hashsep$from_name)) %in% univs.hashsep.name
+
+# Univs with posts that can be seperated by (1)(2)...numbering
+univs.numbered.name <- c("연세대학교 대나무숲", "SNU Bamboo Grove")
+
+univs.numbered <- subset(file, from_name %in% univs.numbered.name)
+levels(factor(univs.numbered$from_name)) %in% univs.numbered.name
+
+# Univs don't need seperation
+univs.nosep.name <- setdiff(univs.name, union(univs.hashsep.name, univs.numbered.name))
+
+univs.nosep <- subset(file, from_name %in% univs.nosep.name)
+levels(factor(univs.nosep$from_name)) %in% univs.nosep.name
+
+#final check
+nrow(file) == nrow(univs.hashsep) + nrow(univs.nosep) +  nrow(univs.numbered)
+
+```
+
+<h2> Step3: Seperating </h2>
+<hr>
+<h4> Step3-1: Split hashed Unviersiies such that <i>#....#....</i> </h4>
+```{r}
+#leave only messages 
+univs.hashsep <- univs.hashsep$message
+univs.numbered <- univs.numbered$message
+univs.nosep <- univs.nosep$message
+
+#split
+sepped.hash <-unlist(sapply(X = univs.hashsep ,FUN = function(x) strsplit(x,"#"),USE.NAMES = FALSE))
+
+
+#check
+sepped.hash.len <- sapply(sepped.hash, nchar)
+sepped.hash.len <- unname(sepped.hash.len)
+
+#when nchar <= 14, we can see dramatic increase of Frequency 
+tab <- table(sepped.hash.len)
+tab <- as.data.frame(tab)
+tab <- subset(tab, as.numeric(sepped.hash.len) < 100)
+ggplot(data=tab, aes(x = sepped.hash.len, y = Freq)) + geom_histogram(stat="identity")
+
+# We can see that seperated messages with nchar <= 14 are meaningless.
+sepped.hash[sepped.hash.len==17]
+
+# Therefore, remove them
+sepped.hash14 <- sepped.hash[sepped.hash.len > 14] # strict version
+sepped.hash17 <- sepped.hash[sepped.hash.len > 17] # naive version (more loss)
+```
+
+<h4> Step3-2: Split numbered Univs such that  &nbsp; <i>(1)...(2)...  </i> </h4>
+```{r}
+#Test the seperation rule
+check <- gregexpr("\\(\\d\\)", univs.numbered)
+target.index <- unlist(lapply(check, function(x) x[1] != -1 ))
+
+#Working good
+target <- univs.numbered[target.index]
+test <- strsplit(target[1:10],split = "\\(\\d\\)")
+
+# SPlit!
+sepped.numbered <- unlist(sapply(X = univs.numbered, FUN = function(x) strsplit(x, "\\(\\d\\)"), USE.NAMES = FALSE))
+
+#check
+sepped.numbered.len <- sapply(sepped.numbered, nchar)
+sepped.numbered.len <- unname(sepped.numbered.len)
+
+#Here we can see that nchar == 0 is outstanding
+tab <- table(sepped.numbered.len)
+tab <- as.data.frame(tab)
+tab <- subset(tab, as.numeric(sepped.numbered.len) < 100)
+ggplot(data=tab, aes(x = sepped.numbered.len, y = Freq)) + geom_histogram(stat="identity")
+
+# And nchar == 0 are meaningless
+sepped.numbered[sepped.numbered.len==1]
+
+# Therefore, remove them
+sepped.numbered <- sepped.numbered[sepped.numbered.len != 0]
+```
+
+
+<h2> Step4: Merge </h2>
+
+```{r}
+#version1 : Strict (less loss, but a lot of noise)
+Sepped.v1 <- c(univs.nosep, sepped.hash14, sepped.numbered)
+
+#Version2: Naive (more loss, but less noise)
+Sepped.v2 <- c(univs.nosep, sepped.hash17, sepped.numbered)
+setwd("C:\\Users\\kyuchul\\Documents\\Carrer\\Rzip\\data")
+save(Sepped.v1, Sepped.v2, file="Bamboo_Seperated.RData")
+```
