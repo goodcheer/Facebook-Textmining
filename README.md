@@ -5,11 +5,11 @@ In South Korea, there are Facebook web pages called "Bamboo Forest" where univer
 We parsed Facebook Page contents using Rfacebook Package.<br>
 Scraped data from the date page was published until 2017-10-16.<br>
 This code include only my part of scraping data. Rest of data (other universities) were scraped by other project members.
-<a href="Facebook-Textmining/RfacebookCrawler.R"> RfacebookCrawler.R </a>
+<a href="RfacebookCrawler.R"> RfacebookCrawler.R </a>
 
 <h2> Step2: Cleansing Data </h2>
 <ol>
 <li> <b> Seperating Posts by documents. </b> <br>
           LSA method needs the each row of Document Term Matrix to be single document. However, there are some facebook page posts that includes 
           several documents. Therefore, we need to split those posts in to individual documents. <br>
-          <a href="Facebook-Textmining/Post_seperation.md">Post-seperation.md </a> </li>
+          <a href="Post_seperation.md">Post-seperation.md </a> </li>
