@@ -1,11 +1,4 @@
-﻿---
-title: "LSA & LDA on Facebook"
-output:
-  html_document:
-    keep_md: yes
-  word_document: default
----
-# Facebook-Textmining
+﻿# Facebook-Textmining
 In South Korea, there are Facebook web pages called "Bamboo Forest" where university students share their ideas anonymously. By scraping this pages, we are about to analyse what are the major issues around South Korean university students. 
 
 <h2> Step1: Crawling Data </h2>
@@ -20,6 +13,7 @@ This code include only my part of scraping data. Rest of data (other universitie
           LSA method needs the each row of Document Term Matrix to be single document. However, there are some facebook page posts that includes 
           several documents. Therefore, we need to split those posts in to individual documents. <br>
           <a href="Post_seperation.md">Post-seperation.md </a> </li>
+</ol>
 
 ## LSA
 
