@@ -1,8 +1,9 @@
 ---
 title: "Seperation Posts by Document"
-output: 
+output:
+  word_document: default
   html_document:
-    keep_md: true
+    keep_md: yes
 ---
 
 <h2> Step 1: Exclude univs that are hard to seperate posts </h2>
