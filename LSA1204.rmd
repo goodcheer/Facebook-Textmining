@@ -8,7 +8,10 @@ output:
 
 ## LSA
 
-In this document, we will skip the step 3 because it takes more than an hour to run.
+In this document, we will skip actuall running of the codes, 
+1) it takes more than an hour for running
+2) Knitting the rmd has encoding problems unresolved.
+if you want to run the code, remove eval=FALSE.
 
 1. Load Prepared Data
 
@@ -17,7 +20,7 @@ load("FinalFBdata.RData")
 ```
 
 2. Settings
-```{r} 
+```{r eval=FALSE} 
 #Packages to use
 packages = c("Rfacebook", "tm", "lsa", "wordcloud","ggplot2","KoNLP",
              "GPArotation","cluster","RWeka","ROAuth","fpc","stringr","ape","devtools")
@@ -37,7 +40,6 @@ useNIADic()
 
 #Wordcloud Color settting
 pal <- brewer.pal(9,"Set1")
-
 
 ```
 
@@ -80,7 +82,7 @@ words <- c(words, c("아대","있"))
 ```
     
 5. Make a corpus
-```{r}
+```{r eval=FALSE}
 # Vectorize the nouns 
 corpus <- Corpus(VectorSource(txt_noun1))
 
@@ -92,7 +94,7 @@ corpus <- tm_map(corpus, removeWords, words)
 ```
 
 6. Make a documentTermMatrix
-```{r}
+```{r eval=FALSE}
 control = list(tokenize = uniTokenizer,
                removeNumbers = TRUE,
                wordLengths=c(2,20),
@@ -107,7 +109,7 @@ Encoding(dtm$dimnames$Terms) ='UTF-8'
 ```
 
 7. Remove Sparse Terms
-```{r}
+```{r eval=FALSE}
 dt <- removeSparseTerms(dtm,0.994)
 as.numeric(object.size(dt)/object.size(dtm)) * 100 # ratio of reduced/ original
 
@@ -117,7 +119,7 @@ dt <- dt[check,]
 ```
 
 8. Make a LSA model
-```{r}
+```{r eval=FALSE}
 LSA <-lsa(dt,dim=5)
 st <-LSA$tk
 wd <- LSA$dk
@@ -135,7 +137,7 @@ text_lsa <- data.frame(cord=cord,file=file1[check])
 ```
 
 9. Find an Elbow (Scree Plot)
-```{r}
+```{r eval=FALSE}
 mysvd <- svd(dt)
 ggplot(data = NULL, aes(x=seq_along(mysvd[["d"]]), y=mysvd[["d"]])) + 
   geom_line() + geom_point(colour="blue") + 
@@ -143,10 +145,13 @@ ggplot(data = NULL, aes(x=seq_along(mysvd[["d"]]), y=mysvd[["d"]])) +
   geom_vline(xintercept = 5, colour="red")+
   geom_vline(xintercept = 7, colour="red")
 ```
+
+![screeplot](images/scree.png)
+
 Appopriate dimension is around 5 ~ 7, through several analysis, we found that the fittest number of dimension was 5 in the point of plausable interpretation. 
 
 9. Draw Word Clouds for each Dimension and Interpret!
-```{r }
+```{r eval=FALSE}
 
 showmedim <- function(dimen){
   t<-rot$loadings[,dimen]
@@ -162,10 +167,17 @@ showmedim(4)
 showmedim(5)
 ```
 
+![dim](images/dim1.png)
+![dim](images/dim2.png)
+![dim](images/dim3.png)
+![dim](images/dim4.png)
+![dim](images/dim5.png)
+
+
 ## LDA
 now with the fact that we have 5 main topics on this corpus, we can apply LDA on this.
 
-```{r}
+```{r eval=FALSE}
 #install.packages("lda")
 #install.packages("LDAvis")
 library(lda)
@@ -231,8 +243,8 @@ json <- createJSON(phi = dat$phi,
 
 #install.packages("servr")
 library(servr)
-
 serVis(json, out.dir = 'visualized', open.browser = FALSE)
 
 ```
 
+[LDA Visaulized](visual/index.html)
