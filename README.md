@@ -263,4 +263,4 @@ library(servr)
 serVis(json, out.dir = 'visualized', open.browser = FALSE)
 ```
 
-https://rawgit.com/goodcheer/Facebook-Textmining/master/visual/index.html
+[See LDA Visualization](https://rawgit.com/goodcheer/Facebook-Textmining/master/visual/index.html)
