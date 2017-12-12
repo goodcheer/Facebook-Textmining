@@ -195,72 +195,51 @@ now with the fact that we have 5 main topics on this corpus, we can apply LDA on
 
 
 ```r
-#install.packages("lda")
-#install.packages("LDAvis")
+#LDA
 library(lda)
-library(LDAvis)
+library(topicmodels)
+ldaform <- dtm2ldaformat(td, omit_empty=TRUE)
 
-doc.list <- txt_noun1[1:1000]
+result.lda <- lda.collapsed.gibbs.sampler(documents = ldaform$documents,
+                                          K = 30, vocab = ldaform$vocab,
+                                          num.iterations = 5000, burnin = 1000,
+                                          alpha = 0.01, eta = 0.01)
+#num.iterations posteria number of update
+#burnin = burning of first value
+#alpha = probability of topics in document / 1 = uniform
+#eta = parameter setting = probability of words in one topic
 
-term.table <- table(unlist(doc.list))
-term.table <- sort(term.table, decreasing = TRUE)
+attributes(result.lda)
+dim(result.lda$topics)
+result.lda$topics
+top.topic.words(result.lda$topics)
+result.lda$topic_sums #how many words 
 
-del <- names(term.table) %in% words | term.table < 5
-term.table <- term.table[!del]
-vocab <- names(term.table)
+#######################Visualization############################
 
-get.terms <- function(x) {
-  index <- match(x, vocab)
-  index <- index[!is.na(index)]
-  rbind(as.integer(index - 1), as.integer(rep(1, length(index))))
-}
-documents <- lapply(doc.list, get.terms)
+theta <- t(apply(result.lda$topic_sums + alpha, 2, function(x) x/sum(x)))
+phi <- t(apply(t(result.lda$topics) + eta, 2, function(x) x/sum(x)))
 
-D <- length(documents)  # number of documents (2,000)
-W <- length(vocab)  # number of terms in the vocab (14,568)
-doc.length <- sapply(documents, function(x) sum(x[2, ]))  # number of tokens per document [312, 288, 170, 436, 291, ...]
-N <- sum(doc.length)  # total number of tokens in the data (546,827)
-term.frequency <- as.integer(term.table)  # frequencies of terms in the corpus [8939, 5544, 2411, 2410, 2143, ...]
-
-K <- 5 # number of topics
-
-G <- 5000
-alpha <- 0.02
-eta <- 0.02
-
-library(lda)
-set.seed(357)
-t1<-Sys.time()
-fit <- lda.collapsed.gibbs.sampler(documents = documents, K = K, vocab=vocab,
-                                   num.iterations = G, alpha = alpha, 
-                                   eta = eta, initial = NULL, burnin = 0,
-                                   compute.log.likelihood = TRUE)
-t2 <- Sys.time()
-t2-t1
-
-theta <- t(apply(fit$document_sums + alpha, 2, function(x) x/sum(x)))
-phi <- t(apply(t(fit$topics) + eta, 2, function(x) x/sum(x)))
-
-dat <- list(phi = phi,
+MovieReviews <- list(phi = phi,
                      theta = theta,
-                     doc.length = doc.length,
-                     vocab = vocab,
-                     term.frequency = term.frequency)
+                     doc.length = 85432,
+                     vocab = ldaform$vocab,
+                     term.frequency = TermFreq)
 
-options(encoding = 'UTF-8')
+options(encoding = 'UTF-8') #한글로 결과 보기
 
 library(LDAvis)
 
 # create the JSON object to feed the visualization:
-json <- createJSON(phi = dat$phi, 
-                   theta = dat$theta, 
-                   doc.length = dat$doc.length, 
-                   vocab = dat$vocab, 
-                   term.frequency = dat$term.frequency, encoding='UTF-8')
-
+json <- createJSON(phi = MovieReviews$phi, 
+                   theta = MovieReviews$theta, 
+                   doc.length = MovieReviews$doc.length, 
+                   vocab = MovieReviews$vocab, 
+                   term.frequency = MovieReviews$term.frequency, encoding='UTF-8')
 #install.packages("servr")
 library(servr)
-serVis(json, out.dir = 'visualized', open.browser = FALSE)
+
+serVis(json, out.dir = 'vis', open.browser = TRUE)
 ```
 
 [See LDA Visualization](https://rawgit.com/goodcheer/Facebook-Textmining/master/visual/index.html)
