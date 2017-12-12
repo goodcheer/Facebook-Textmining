@@ -242,8 +242,8 @@ library(servr)
 serVis(json, out.dir = 'vis', open.browser = TRUE)
 ```
 
-[See LDA Visualization](https://rawgit.com/goodcheer/Facebook-Textmining/master/visual/index.html)
+###[See LDA Visualization](https://rawgit.com/goodcheer/Facebook-Textmining/master/visual/index.html)
 
 ## Reports (Korean)
 ![poster](reports/poster.jpg)
-[Download report.docx](reports/report.docx?raw=true)
+###[Download report.docx](reports/report.docx?raw=true)
