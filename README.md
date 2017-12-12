@@ -246,4 +246,4 @@ serVis(json, out.dir = 'vis', open.browser = TRUE)
 
 ## Reports (Korean)
 ![poster](reports/poster.jpg)
-[report](reports/report.docx)
+[Download report.docx](reports/report.docx?raw=true)
